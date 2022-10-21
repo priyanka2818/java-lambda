@@ -12,8 +12,8 @@ pipeline {
     }
 
     environment {
-        AWS_ACCESS_KEY = 'AKIAWABC6GF6UR3DXLHZ'
-        AWS_SECRET_KEY = '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'
+        AWS_ACCESS_KEY = credentials('aws_access_key')
+        AWS_SECRET_KEY = credentials('aws_secret_key')
     }
 
     stages {
@@ -39,12 +39,13 @@ pipeline {
         stage('Deploy to QA') {
             steps {
                 echo 'Deploy to QA'
-                sh 'zip -g bermtec-0.0.1.zip .'
+                sh 'zip -g bermtec-0.0.1.zip **/target'
                  
                  sh 'aws --version'
+                 sh 'aws s3 ls'
                  sh 'aws configure set aws_access_key_id $AWS_ACCESS_KEY'
                  sh 'aws configure set aws_secret_access_key $AWS_SECRET_KEY'
-                 sh 'aws configure set region us-east-1' 
+                //  sh 'aws configure set region us-east-1' 
                  echo "Stage 2 Yes"
                  sh 'aws lambda update-function-code --function-name test  --zip-file fileb://bermtec-0.0.1.zip'              
             }
@@ -53,6 +54,12 @@ pipeline {
         stage('Deploy to Prod') {
             steps {
                 echo 'Deploy to Prod'
+                script {
+                    if (env.BRANCH_NAME == "master") {
+                        input('Proceed for Prod Deployment ?')
+                    }
+                }
+
             }
         }
     }

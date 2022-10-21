@@ -46,14 +46,15 @@ pipeline {
                  sh 'aws configure set aws_access_key_id $AWS_ACCESS_KEY'
                  sh 'aws configure set aws_secret_access_key $AWS_SECRET_KEY'
                 //  sh 'aws configure set region us-east-1' 
+                sh 'aws s3 cp bermtec-0.0.1.zip s3://bermtec28/lambdatest'
                  echo "Stage 2 Yes"
                  sh 'aws lambda update-function-code --function-name test  --zip-file fileb://bermtec-0.0.1.zip'              
             }
         }
 
-        stage('Deploy to Prod') {
+        stage('Release to Prod') {
             steps {
-                echo 'Deploy to Prod'
+                echo 'Release to Prod'
                 script {
                     if (env.BRANCH_NAME == "master") {
                         input('Proceed for Prod Deployment ?')
@@ -62,10 +63,23 @@ pipeline {
 
             }
         }
+
+         stage('Deploy to Prod') {
+            steps {
+                echo 'Deploy to Prod'
+                sh 'aws s3 cp bermtec-0.0.1.zip s3://bermtec28/lambdaprod'
+                sh 'aws lambda update-function-code --function-name prodfunction  --zip-file fileb://bermtec-0.0.1.zip'  
+
+            }
+        }
+
     }
     post {
       failure {
-        echo 'Failed'
+        echo 'failed'
+             mail to: 'teambermtec@gmail.com',
+             subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+             body: "Something is wrong with ${env.BUILD_NUMBER}"
       }
       success {
         echo 'Success'

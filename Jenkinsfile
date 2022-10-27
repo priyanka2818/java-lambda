@@ -12,7 +12,7 @@ pipeline {
     }
 
     environment {
-        AWS_ACCESS_KEY = credentials('aws_access_key')
+        AWS_ACCESS_KEY = credentials('aws-access-key')
         AWS_SECRET_KEY = credentials('aws_secret_key')
     }
 
@@ -21,6 +21,8 @@ pipeline {
         stage('Build Lambda') {
             steps {
                 echo 'Build'
+        
+        
                 sh 'mvn clean install'             
             }
         }
